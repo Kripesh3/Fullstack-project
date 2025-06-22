@@ -1,58 +1,69 @@
 <?php
 
+use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\EventController;
+use App\Http\Controllers\API\EventCategoryController;
+use App\Http\Controllers\API\UserController;
+use App\Http\Controllers\API\AdminController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\EventRegistrationController;
-use App\Http\Controllers\EventController;
-use App\Http\Controllers\EventCategoryController;
-use App\Http\Controllers\AdminController;
-use App\Http\Controllers\Auth\ForgotPasswordController;
-use App\Http\Controllers\Auth\ResetPasswordController;
 
-Route::get('/', function () {
-    return response()->json(['message' => 'Welcome to the API!']);
-});
-
-
-Route::post('password/email', [ForgotPasswordController::class, 'sendResetLinkEmail']);
-Route::post('password/reset', [ResetPasswordController::class, 'reset']);
-
+// Public routes
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login']);
 
-// Public routes for events (so users can browse without logging in)
+// Password reset routes (API versions)
+Route::post('/password/email', [AuthController::class, 'forgotPassword']);
+Route::post('/password/reset', [AuthController::class, 'resetPassword']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']); 
+Route::post('/reset-password', [AuthController::class, 'resetPassword']); 
+
+// Public event and category routes
 Route::get('/events', [EventController::class, 'index']);
-Route::get('events/{id}', [EventController::class, 'show']);
+Route::get('/events/{event}', [EventController::class, 'show']);
+Route::get('/categories', [EventCategoryController::class, 'index']);
+Route::get('/categories/{category}', [EventCategoryController::class, 'show']);
+Route::get('/categories/{category}/events', [EventCategoryController::class, 'events']);
 
-
+// Protected routes
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('logout', [AuthController::class, 'logout']);
-
-    Route::get('/me', [ProfileController::class, 'show']);
-    Route::put('me', [ProfileController::class, 'update']);
-    Route::put('me/password', [ProfileController::class, 'changePassword']);
-
-    Route::post('events', [EventController::class, 'store'])->middleware('can:create,App\Models\Event');
-    Route::put('events/{event}', [EventController::class, 'update'])->middleware('can:update,event');
-    Route::delete('events/{event}', [EventController::class, 'destroy'])->middleware('can:delete,event');
-
-    Route::post('events/{id}/register', [EventRegistrationController::class, 'register']);
-    Route::delete('events/{id}/register', [EventRegistrationController::class, 'unregister']);
-
-    Route::get('categories', [EventCategoryController::class, 'index']);
-
+    // Auth routes
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [AuthController::class, 'user']);
+    
+    // User routes (temporarily using AuthController)
+    Route::get('/profile', [AuthController::class, 'profile']);
+    Route::put('/profile', [AuthController::class, 'updateProfile']);
+    Route::post('/profile', [AuthController::class, 'updateProfile']); // For file uploads
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
+    
+    // Event management
+    Route::post('/events', [EventController::class, 'store']);
+    Route::put('/events/{event}', [EventController::class, 'update']);
+    Route::post('/events/{event}', [EventController::class, 'update']); // For file uploads
+    Route::delete('/events/{event}', [EventController::class, 'destroy']);
+    Route::post('/events/{event}/attend', [EventController::class, 'attend']);
+    Route::delete('/events/{event}/unattend', [EventController::class, 'unattend']);
+    Route::post('/verify-ticket', [EventController::class, 'verifyTicket']); // QR ticket verification
+    
+    // User events
+    Route::get('/my-events', [EventController::class, 'myEvents']);
+    Route::get('/attended-events', [EventController::class, 'attendedEvents']);
+    
     // Admin routes
-    Route::middleware('can:admin')->group(function () {
-        Route::post('admin/events/{id}/approve', [AdminController::class, 'approveEvent']);
-        Route::post('admin/events/{id}/reject', [AdminController::class, 'rejectEvent']);
-        Route::get('admin/users', [AdminController::class, 'users']);
-        Route::get('admin/events', [AdminController::class, 'events']);
-        Route::post('admin/users/{id}/ban', [AdminController::class, 'banUser']);
-        Route::post('admin/users/{id}/warn', [AdminController::class, 'warnUser']);
-
-        Route::post('categories', [EventCategoryController::class, 'store']);
-        Route::put('categories/{id}', [EventCategoryController::class, 'update']);
-        Route::delete('categories/{id}', [EventCategoryController::class, 'destroy']);
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/admin/dashboard', [AdminController::class, 'dashboard']);
+        Route::get('/admin/users', [AdminController::class, 'users']);
+        Route::get('/admin/events', [AdminController::class, 'events']);
+        Route::put('/admin/events/{event}/approve', [AdminController::class, 'approveEvent']);
+        Route::put('/admin/events/{event}/reject', [AdminController::class, 'rejectEvent']);
+        Route::delete('/admin/users/{user}', [AdminController::class, 'deleteUser']);
+        Route::put('/admin/users/{user}/ban', [AdminController::class, 'banUser']);
+        Route::put('/admin/users/{user}/unban', [AdminController::class, 'unbanUser']);
+        
+        // Category management
+        Route::post('/categories', [EventCategoryController::class, 'store']);
+        Route::put('/categories/{category}', [EventCategoryController::class, 'update']);
+        Route::delete('/categories/{category}', [EventCategoryController::class, 'destroy']);
     });
 });
