@@ -21,11 +21,12 @@ interface Category {
   name: string;
 }
 
-export default function EditEventPage({ params }: { params: { id: string } }) {
+export default function EditEventPage({ params }: { params: Promise<{ id: string }> }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [event, setEvent] = useState<any>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [eventId, setEventId] = useState<string>('');
   const [formData, setFormData] = useState<EventFormData>({
     title: '',
     description: '',
@@ -39,6 +40,14 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
   const [loadingEvent, setLoadingEvent] = useState(true);
 
   useEffect(() => {
+    const getParams = async () => {
+      const resolvedParams = await params;
+      setEventId(resolvedParams.id);
+    };
+    getParams();
+  }, [params]);
+
+  useEffect(() => {
     if (!loading && !user) {
       router.push('/auth/login');
     } else if (user && user.role !== 'organizer') {
@@ -47,16 +56,16 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
   }, [user, loading, router]);
 
   useEffect(() => {
-    if (user) {
+    if (user && eventId) {
       fetchEvent();
       fetchCategories();
     }
-  }, [user, params.id]);
+  }, [user, eventId]);
 
   const fetchEvent = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/${params.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/${eventId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/json',
@@ -150,7 +159,7 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
         formDataToSend.append('image', formData.image);
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/${params.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/events/${eventId}`, {
         method: 'POST', // Laravel uses POST with _method for file uploads
         headers: {
           'Authorization': `Bearer ${token}`,
