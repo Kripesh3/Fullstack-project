@@ -6,8 +6,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import api from '../../lib/api';
-import { useConfirmation } from '../../hooks/useConfirmation';
-import toast from 'react-hot-toast';
 
 interface Event {
   id: number;
@@ -32,7 +30,6 @@ interface Event {
 export default function AdminEvents() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const confirmation = useConfirmation();
   const [events, setEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -83,13 +80,12 @@ export default function AdminEvents() {
         setEvents(events.map(event => 
           event.id === eventId ? { ...event, status: 'approved' } : event
         ));
-        toast.success('Event approved successfully');
       } else {
-        toast.error('Failed to approve event');
+        alert('Failed to approve event');
       }
     } catch (error) {
       console.error('Error approving event:', error);
-      toast.error('Error approving event');
+      alert('Error approving event');
     }
   };
 
@@ -101,25 +97,17 @@ export default function AdminEvents() {
         setEvents(events.map(event => 
           event.id === eventId ? { ...event, status: 'rejected' } : event
         ));
-        toast.success('Event rejected successfully');
       } else {
-        toast.error('Failed to reject event');
+        alert('Failed to reject event');
       }
     } catch (error) {
       console.error('Error rejecting event:', error);
-      toast.error('Error rejecting event');
+      alert('Error rejecting event');
     }
   };
 
   const deleteEvent = async (eventId: number) => {
-    const confirmed = await confirmation.showConfirmation({
-      title: 'Delete Event',
-      message: 'Are you sure you want to delete this event? This action cannot be undone.',
-      confirmText: 'Delete',
-      type: 'danger'
-    });
-
-    if (!confirmed) {
+    if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
       return;
     }
 
@@ -135,13 +123,12 @@ export default function AdminEvents() {
 
       if (response.ok) {
         setEvents(events.filter(event => event.id !== eventId));
-        toast.success('Event deleted successfully');
       } else {
-        toast.error('Failed to delete event');
+        alert('Failed to delete event');
       }
     } catch (error) {
       console.error('Error deleting event:', error);
-      toast.error('Error deleting event');
+      alert('Error deleting event');
     }
   };
 

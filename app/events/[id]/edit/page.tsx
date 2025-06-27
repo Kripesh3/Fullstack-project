@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../providers/AuthProvider';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
-import toast from 'react-hot-toast';
 
 interface EventFormData {
   title: string;
@@ -84,12 +83,12 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
           category_id: eventData.category_id?.toString() || '',
         });
       } else {
-        toast.error('Event not found or you do not have permission to edit it');
+        alert('Event not found or you do not have permission to edit it');
         router.push('/organizer');
       }
     } catch (error) {
       console.error('Error fetching event:', error);
-      toast.error('Error loading event');
+      alert('Error loading event');
       router.push('/organizer');
     } finally {
       setLoadingEvent(false);
@@ -161,16 +160,16 @@ export default function EditEventPage({ params }: { params: { id: string } }) {
       });
 
       if (response.ok) {
-        toast.success('Event updated successfully!');
+        alert('Event updated successfully!');
         router.push('/organizer');
       } else {
         const errorData = await response.json();
         console.error('Error response:', errorData);
-        toast.error(errorData.message || 'Failed to update event');
+        alert(errorData.message || 'Failed to update event');
       }
     } catch (error) {
       console.error('Error updating event:', error);
-      toast.error('Error updating event');
+      alert('Error updating event');
     } finally {
       setSubmitting(false);
     }

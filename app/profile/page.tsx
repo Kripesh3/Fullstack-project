@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../providers/AuthProvider';
-import { useConfirmationDialog } from '../providers/ConfirmationProvider';
 import { useRouter } from 'next/navigation';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import api from '../lib/api';
@@ -22,7 +21,6 @@ interface PasswordFormData {
 
 export default function ProfilePage() {
   const { user, logout, loading, isAuthenticated, updateUser } = useAuth();
-  const { showConfirmation } = useConfirmationDialog();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -75,7 +73,7 @@ export default function ProfilePage() {
     }));
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedFile(file);
@@ -84,15 +82,7 @@ export default function ProfilePage() {
       
       // If not in editing mode, show confirmation to update avatar immediately
       if (!isEditing) {
-        const confirmed = await showConfirmation({
-          title: 'Update Profile Picture',
-          message: 'Do you want to update your profile picture immediately?',
-          confirmText: 'Update Now',
-          cancelText: 'Cancel',
-          type: 'info'
-        });
-
-        if (confirmed) {
+        if (confirm('Update profile picture immediately?')) {
           handleAvatarUpdate(file);
         } else {
           // Clear the selection if user cancels
@@ -115,7 +105,7 @@ export default function ProfilePage() {
 
     setIsSaving(true);
     try {
-      // Updating avatar only
+      console.log('Updating avatar only...', file.name, file.size, file.type);
 
       const formDataToSend = new FormData();
       formDataToSend.append('avatar', file);
@@ -150,7 +140,11 @@ export default function ProfilePage() {
 
     setIsSaving(true);
     try {
-      // Starting profile update
+      console.log('Starting profile update...', {
+        formData,
+        selectedFile,
+        user: user.id
+      });
 
       const formDataToSend = new FormData();
       
@@ -167,17 +161,17 @@ export default function ProfilePage() {
       
       if (selectedFile) {
         formDataToSend.append('avatar', selectedFile);
-        // Avatar file attached
+        console.log('Avatar file attached:', selectedFile.name, selectedFile.size, selectedFile.type);
       }
 
-      // Making API request to /profile
+      console.log('Making API request to /profile...');
       const response = await api.post('/profile', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
 
-      // Profile update successful
+      console.log('Profile update response:', response.data);
 
       if (response.data.success) {
         // Update user in context

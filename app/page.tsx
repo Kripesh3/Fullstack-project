@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import EventList from './events/components/EventList';
-import HeroSection from '../components/layout/HeroSection';
+import HeroSection from './components/layout/HeroSection';
 import { useAuth } from './providers/AuthProvider';
 import { CalendarIcon, UserGroupIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 

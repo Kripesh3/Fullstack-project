@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '../providers/AuthProvider';
-import { useConfirmationDialog } from '../providers/ConfirmationProvider';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -26,7 +25,6 @@ import { toast } from 'react-hot-toast';
 
 export default function MyEventsPage() {
   const { user, loading } = useAuth();
-  const { showConfirmation } = useConfirmationDialog();
   const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
@@ -72,15 +70,9 @@ export default function MyEventsPage() {
   };
 
   const deleteEvent = async (eventId: number) => {
-    const confirmed = await showConfirmation({
-      title: 'Delete Event',
-      message: 'Are you sure you want to delete this event? This action cannot be undone and will permanently remove the event and all registrations.',
-      confirmText: 'Delete Event',
-      cancelText: 'Cancel',
-      type: 'danger'
-    });
-
-    if (!confirmed) return;
+    if (!confirm('Are you sure you want to delete this event?')) {
+      return;
+    }
 
     try {
       await api.delete(`/events/${eventId}`);

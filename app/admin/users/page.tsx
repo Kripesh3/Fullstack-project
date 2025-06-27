@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../providers/AuthProvider';
-import { useConfirmationDialog } from '../../providers/ConfirmationProvider';
 import { useRouter } from 'next/navigation';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import api from '../../lib/api';
-import { toast } from 'react-hot-toast';
 
 interface User {
   id: number;
@@ -22,7 +20,6 @@ interface User {
 
 export default function AdminUsers() {
   const { user, loading } = useAuth();
-  const { showConfirmation } = useConfirmationDialog();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -67,15 +64,9 @@ export default function AdminUsers() {
   };
 
   const banUser = async (userId: number) => {
-    const confirmed = await showConfirmation({
-      title: 'Ban User',
-      message: 'Are you sure you want to ban this user? They will not be able to access the platform.',
-      confirmText: 'Ban User',
-      cancelText: 'Cancel',
-      type: 'danger'
-    });
-
-    if (!confirmed) return;
+    if (!confirm('Are you sure you want to ban this user?')) {
+      return;
+    }
 
     try {
       const response = await api.put(`/admin/users/${userId}/ban`);
@@ -84,13 +75,12 @@ export default function AdminUsers() {
         setUsers(users.map(user => 
           user.id === userId ? { ...user, banned: true, status: 'banned' } : user
         ));
-        toast.success('User banned successfully');
       } else {
-        toast.error('Failed to ban user');
+        alert('Failed to ban user');
       }
     } catch (error) {
       console.error('Error banning user:', error);
-      toast.error('Error banning user');
+      alert('Error banning user');
     }
   };
 
@@ -102,39 +92,31 @@ export default function AdminUsers() {
         setUsers(users.map(user => 
           user.id === userId ? { ...user, banned: false, status: 'active' } : user
         ));
-        toast.success('User unbanned successfully');
       } else {
-        toast.error('Failed to unban user');
+        alert('Failed to unban user');
       }
     } catch (error) {
       console.error('Error unbanning user:', error);
-      toast.error('Error unbanning user');
+      alert('Error unbanning user');
     }
   };
 
   const deleteUser = async (userId: number) => {
-    const confirmed = await showConfirmation({
-      title: 'Delete User',
-      message: 'Are you sure you want to delete this user? This action cannot be undone and will permanently remove all their data.',
-      confirmText: 'Delete User',
-      cancelText: 'Cancel',
-      type: 'danger'
-    });
-
-    if (!confirmed) return;
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return;
+    }
 
     try {
       const response = await api.delete(`/admin/users/${userId}`);
 
       if (response.data.success) {
         setUsers(users.filter(user => user.id !== userId));
-        toast.success('User deleted successfully');
       } else {
-        toast.error('Failed to delete user');
+        alert('Failed to delete user');
       }
     } catch (error) {
       console.error('Error deleting user:', error);
-      toast.error('Error deleting user');
+      alert('Error deleting user');
     }
   };
 
