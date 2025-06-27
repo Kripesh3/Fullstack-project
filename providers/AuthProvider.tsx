@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from '../app/types';
-import api from '../lib/api';
+import api from '../app/lib/api';
 import { toast } from 'react-hot-toast';
 
 interface AuthContextType {
