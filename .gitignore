@@ -24,3 +24,17 @@ Homestead.yaml
 npm-debug.log
 Thumbs.db
 yarn-error.log
+
+# Test files
+test_*.php
+test_*.gif
+test_*.jpg
+test_*.png
+test_*.txt
+create_admin.php
+create_test_users.php
+update_passwords.php
+
+# Development files
+package.json
+vite.config.js
