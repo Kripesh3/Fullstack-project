@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import api from '../lib/api';
-import { Event } from './types';
+import { Event } from '../types';
 import { formatPrice, getStatusColor } from '../lib/utils';
 import { 
   CalendarIcon, 

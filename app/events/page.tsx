@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { EventCategory } from './types';
+import { EventCategory } from '../types';
 import api from '../lib/api';
 import EventList from './components/EventList';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
