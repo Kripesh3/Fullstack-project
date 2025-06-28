@@ -186,7 +186,7 @@ class AuthController extends Controller
             // Send email with reset token (for API, we'll return the token for testing)
             // In production, you would send this via email
             try {
-                $resetUrl = config('app.frontend_url', 'http://localhost:3000') . '/reset-password?token=' . $token . '&email=' . urlencode($request->email);
+                $resetUrl = config('app.frontend_url', 'http://192.176.172.226:3000') . '/reset-password?token=' . $token . '&email=' . urlencode($request->email);
                 
                 Mail::send('emails.password-reset', [
                     'user' => $user,
